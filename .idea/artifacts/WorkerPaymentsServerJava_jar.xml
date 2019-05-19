@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="WorkerPaymentsJava:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/WorkerPaymentsJava_jar</output-path>
-    <root id="archive" name="WorkerPaymentsJava.jar">
+  <artifact type="jar" name="WorkerPaymentsServerJava:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/WorkerPaymentsServerJava_jar</output-path>
+    <root id="archive" name="WorkerPaymentsServerJava.jar">
       <element id="module-output" name="WorkerPaymentsServerJava" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/poi-ooxml-4.1.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/commons-compress-1.18.jar" path-in-jar="/" />
