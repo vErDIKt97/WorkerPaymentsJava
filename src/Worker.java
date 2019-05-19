@@ -9,11 +9,15 @@ class Worker implements Serializable {
         return name;
     }
 
-    void setSells(Integer sells) {
-        this.sells = sells;
+    void setName(String name) {
+        this.name = name;
     }
 
-    public Integer getSells() {
+    Integer getSells() {
         return sells;
+    }
+
+    void setSells(Integer sells) {
+        this.sells = sells;
     }
 }
