@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,7 +11,6 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class WorkPayServ {
@@ -26,12 +26,12 @@ public class WorkPayServ {
 
     public class ServerStart implements Runnable {
         private JFrame frameServer = new JFrame("Сервер");
-        private JButton stopServer = new JButton("STOP");
         Thread t;
         Socket clientSocket;
 
-        public ServerStart() {
+        ServerStart() {
             frameServer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            JButton stopServer = new JButton("STOP");
             stopServer.addActionListener(new ButtonStopListener());
             frameServer.getContentPane().add(BorderLayout.CENTER, stopServer);
             frameServer.setSize(100, 100);
@@ -72,7 +72,7 @@ public class WorkPayServ {
         ObjectOutputStream out;
         Socket clientSocket;
 
-        public ClientHandler (Socket socket) {
+        ClientHandler(Socket socket) {
             try {
                 clientSocket = socket;
                 in = new ObjectInputStream(clientSocket.getInputStream());
@@ -99,13 +99,13 @@ public class WorkPayServ {
     }
 
     private void startServer() {
-        list = ExelParser.parse(file);
+        list = ExcelParser.parse(file);
         Thread serverThread = new Thread(new ServerStart());
         serverThread.start();
 
     }
 
-    public void sendResult (Object obj, ObjectOutputStream out) {
+    private void sendResult(Object obj, ObjectOutputStream out) {
         getResult(obj);
         try {
             out.writeObject(worker);
@@ -116,21 +116,19 @@ public class WorkPayServ {
 
     }
 
-    public void getResult (Object obj) {
+    private void getResult(Object obj) {
         worker = (Worker) obj;
-        Iterator<Map.Entry<String ,Integer>> itterator = list.entrySet().iterator();
-        while (itterator.hasNext()) {
-            Map.Entry<String ,Integer> pair =  itterator.next();
-             if (pair.getKey().contains(worker.getName())) {
-                 worker.setSells(pair.getValue());
-                 break;
-             }
+        for (Map.Entry<String, Integer> pair : list.entrySet()) {
+            if (pair.getKey().contains(worker.getName())) {
+                worker.setSells(pair.getValue());
+                break;
+            }
         }
     }
 
 
 
-    public void buildGui() {
+    private void buildGui() {
         frame = new JFrame("WorkerPay Server");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panel = new JPanel();
@@ -141,11 +139,11 @@ public class WorkPayServ {
         text = new JTextField(20);
         text.setMaximumSize(new Dimension(20,20));
         JLabel labelDefault = new JLabel("Путь к файлу выручки:");
-        JLabel labelMoney = new JLabel();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Excel","xlsx");
         fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(filter);
         panel.add(labelDefault);
         panel.add(text);
-        panel.add(labelMoney);
         panel.add(buttonchoose);
 
         frame.getContentPane().add(BorderLayout.CENTER, panel);
@@ -157,12 +155,13 @@ public class WorkPayServ {
 
     class ButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (text.getText().equals(null)) {
-                JOptionPane pane = new JOptionPane(frame,JOptionPane.ERROR_MESSAGE,JOptionPane.DEFAULT_OPTION,null, new String[] {"Сначала выбери файл!"});
+            try {
+                file.exists();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame.getContentPane(), new String[]{"Файл не выбран, либо его не существует!"}, "Ошибка", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-            else {
-                startServer();
-            }
+            startServer();
         }
     }
 

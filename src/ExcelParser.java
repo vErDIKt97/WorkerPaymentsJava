@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class ExelParser {
+class ExcelParser {
 
-    public static HashMap<String, Integer> parse(File file) {
+    static HashMap<String, Integer> parse(File file) {
         //инициализируем потоки
-        HashMap<String, Integer> result = new HashMap<String, Integer>();
+        HashMap<String, Integer> result = new HashMap<>();
         XSSFWorkbook workBook = null;
         try {
             workBook = new XSSFWorkbook(new FileInputStream(file));
@@ -20,7 +20,13 @@ public class ExelParser {
             e.printStackTrace();
         }
         //разбираем первый лист входного файла на объектную модель
-        Sheet sheet = workBook.getSheetAt(0);
+        Sheet sheet;
+        if (workBook != null) {
+            sheet = workBook.getSheetAt(0);
+        }
+        else {
+            throw new Error("Ошибка чтения файла");
+        }
         Iterator<Row> it = sheet.iterator();
         //проходим по всему листу
         for (int i = 0; i < 4; i++) {
