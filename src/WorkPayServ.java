@@ -8,15 +8,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 public class WorkPayServ {
-    private ArrayList<ObjectOutputStream> clientOutputStreams;
     private JFrame frame;
-    private JLabel labelMoney;
     private JTextField text;
     private JFileChooser fileChooser;
     private File file;
@@ -47,19 +44,17 @@ public class WorkPayServ {
                 while ((obj = in.readObject()) != null) {
                     sendResult(obj,out);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void go() {
+    private void go() {
         buildGui();
     }
 
-    public void startServ () {
+    private void startServer() {
         list = ExelParser.parse(file);
         try {
             ServerSocket serverSock = new ServerSocket(4242);
@@ -111,7 +106,7 @@ public class WorkPayServ {
         text = new JTextField(20);
         text.setMaximumSize(new Dimension(20,20));
         JLabel labelDefault = new JLabel("Путь к файлу выручки:");
-        labelMoney = new JLabel();
+        JLabel labelMoney = new JLabel();
         fileChooser = new JFileChooser();
         panel.add(labelDefault);
         panel.add(text);
@@ -131,7 +126,7 @@ public class WorkPayServ {
                 JOptionPane pane = new JOptionPane(frame,JOptionPane.ERROR_MESSAGE,JOptionPane.DEFAULT_OPTION,null, new String[] {"Сначала выбери файл!"});
             }
             else {
-                startServ();
+                startServer();
             }
         }
     }
