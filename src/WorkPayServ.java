@@ -42,8 +42,8 @@ public class WorkPayServ {
         public void run() {
             try {
                 ServerSocket serverSock = new ServerSocket(4242);
+                JOptionPane.showMessageDialog(frame.getContentPane(), new String[]{"The server has started successfully"}, "Server started", JOptionPane.INFORMATION_MESSAGE, null);
                 while (true) {
-                    JOptionPane.showMessageDialog(frame.getContentPane(), new String[]{"The server has started successfully"}, "Server started", JOptionPane.INFORMATION_MESSAGE, null);
                     clientSocket = serverSock.accept();
                     t = new Thread(new ClientHandler(clientSocket));
                     t.start();
