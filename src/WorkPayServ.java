@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,6 +22,47 @@ public class WorkPayServ {
     private Worker worker;
     public static void main(String[] args) {
         new WorkPayServ().go();
+    }
+
+    public class ServerStart implements Runnable {
+        private JFrame frameServer = new JFrame("Сервер");
+        private JButton stopServer = new JButton("STOP");
+        Thread t;
+        Socket clientSocket;
+
+        public ServerStart () {
+            frameServer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            stopServer.addActionListener(new ButtonStopListener());
+            frameServer.getContentPane().add(stopServer);
+            frameServer.setVisible(true);
+        }
+
+        @Override
+        public void run() {
+            try {
+                ServerSocket serverSock = new ServerSocket(4242);
+                while (true) {
+                    JOptionPane.showMessageDialog(frame.getContentPane(),JOptionPane.INFORMATION_MESSAGE,"Server started",JOptionPane.INFORMATION_MESSAGE);
+                    clientSocket = serverSock.accept();
+                    t = new Thread(new ClientHandler(clientSocket));
+                    t.start();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        class ButtonStopListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    t.interrupt();
+                    clientSocket.close();
+                    frameServer.dispatchEvent(new WindowEvent(frameServer,WindowEvent.WINDOW_CLOSING));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 
     public class ClientHandler implements Runnable {
@@ -56,20 +98,11 @@ public class WorkPayServ {
 
     private void startServer() {
         list = ExelParser.parse(file);
-        try {
-            ServerSocket serverSock = new ServerSocket(4242);
-            JOptionPane.showMessageDialog(frame.getContentPane(),JOptionPane.INFORMATION_MESSAGE,"Server started",JOptionPane.INFORMATION_MESSAGE);
-
-            while (true) {
-                Socket clientSocket = serverSock.accept();
-                Thread t = new Thread(new ClientHandler(clientSocket));
-                t.start();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Thread serverThread = new Thread(new ServerStart());
+        serverThread.start();
 
     }
+
     public void sendResult (Object obj, ObjectOutputStream out) {
         getResult(obj);
         try {
