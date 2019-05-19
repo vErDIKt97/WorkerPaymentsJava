@@ -30,10 +30,11 @@ public class WorkPayServ {
         Thread t;
         Socket clientSocket;
 
-        public ServerStart () {
+        public ServerStart() {
             frameServer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             stopServer.addActionListener(new ButtonStopListener());
-            frameServer.getContentPane().add(stopServer);
+            frameServer.getContentPane().add(BorderLayout.CENTER, stopServer);
+            frameServer.setSize(100, 100);
             frameServer.setVisible(true);
         }
 
@@ -42,7 +43,7 @@ public class WorkPayServ {
             try {
                 ServerSocket serverSock = new ServerSocket(4242);
                 while (true) {
-                    JOptionPane.showMessageDialog(frame.getContentPane(),JOptionPane.INFORMATION_MESSAGE,"Server started",JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(frame.getContentPane(), new String[]{"The server has started successfully"}, "Server started", JOptionPane.INFORMATION_MESSAGE, null);
                     clientSocket = serverSock.accept();
                     t = new Thread(new ClientHandler(clientSocket));
                     t.start();
@@ -57,9 +58,10 @@ public class WorkPayServ {
                 try {
                     t.interrupt();
                     clientSocket.close();
-                    frameServer.dispatchEvent(new WindowEvent(frameServer,WindowEvent.WINDOW_CLOSING));
                 } catch (IOException ex) {
                     ex.printStackTrace();
+                } finally {
+                    frameServer.dispatchEvent(new WindowEvent(frameServer, WindowEvent.WINDOW_CLOSING));
                 }
             }
         }
