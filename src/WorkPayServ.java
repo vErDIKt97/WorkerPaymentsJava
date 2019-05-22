@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -28,6 +29,16 @@ public class WorkPayServ {
     private JButton buttonStopServer;
     private JButton buttonLaunchServer;
     private JButton buttonReloadFile;
+
+    private String path;
+
+    {
+        try {
+            path = WorkPayServ.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath() + "cfg.txt";
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
 
     private int threadCount = 1;
     private Integer port;
@@ -54,8 +65,7 @@ public class WorkPayServ {
                         Thread t = new Thread(new ClientHandler(clientSocket));
                         threadCount++;
                         t.start();
-                    }
-                    else synchronized (monitor) {
+                    } else synchronized (monitor) {
                         try {
                             monitor.wait();
                         } catch (InterruptedException e) {
@@ -105,17 +115,16 @@ public class WorkPayServ {
 
     private void go() {
         try {
-            InputStream inputStream = this.getClass().getResourceAsStream("config.properties");
-            prop.load(inputStream);
+            File cfgFile = new File(path);
+            if (cfgFile.exists()) {
+                prop.load(new FileInputStream(cfgFile));
+                launchGui();
+            } else {
+                cfgFile.createNewFile();
+                startGui();
+            }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        if (prop.size()==0)
-        startGui();
-        else {
-            port = Integer.parseInt(prop.getProperty("port"));
-            file = new File(prop.getProperty("file"));
-            launchGui();
         }
     }
 
@@ -268,19 +277,15 @@ public class WorkPayServ {
     public class ButtonSaveSettingsListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (prop.size() > 0) {
-                save();
-            } else {
-                save();
-                launchGui();
-            }
+            save();
+            launchGui();
         }
 
         private void save() {
             try {
                 prop.setProperty("port",port.toString());
                 prop.setProperty("file",file.toString());
-                FileOutputStream outputStream = new FileOutputStream(".\\properties\\config.properties");
+                FileOutputStream outputStream = new FileOutputStream(path);
                 prop.store(outputStream, "settings");
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -342,7 +347,7 @@ public class WorkPayServ {
         }
 
         @Override
-        public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
             text = text.replaceAll("\\D", "");
             super.replace(fb, offset, length, text, attrs);
         }
