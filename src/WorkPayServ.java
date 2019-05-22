@@ -266,28 +266,24 @@ public class WorkPayServ {
     public class ButtonSaveSettingsListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            prop.setProperty("port",port.toString());
-            prop.setProperty("file",file.toString());
-            list = ExcelParser.excelParse(file);
-            port = Integer.parseInt(text.getText());
             if (prop.size() > 0) {
-                try {
-                    FileOutputStream outputStream = new FileOutputStream(".\\properties\\config.properties");
-                    prop.store(outputStream, "settings");
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                frame.setVisible(false);
+                save();
             } else {
-                try {
-                    FileOutputStream outputStream = new FileOutputStream(".\\properties\\config.properties");
-                    prop.store(outputStream, "settings");
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                frame.setVisible(false);
+                save();
                 launchGui();
             }
+        }
+
+        private void save() {
+            try {
+                prop.setProperty("port",port.toString());
+                prop.setProperty("file",file.toString());
+                FileOutputStream outputStream = new FileOutputStream(".\\properties\\config.properties");
+                prop.store(outputStream, "settings");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            frame.setVisible(false);
         }
     }
 
