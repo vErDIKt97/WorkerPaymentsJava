@@ -10,7 +10,7 @@ import java.util.Iterator;
 
 class ExcelParser {
 
-    static HashMap<String, Integer> parse(File file) {
+    static HashMap<String, Integer> excelParse(File file) {
         //инициализируем потоки
         HashMap<String, Integer> result = new HashMap<>();
         XSSFWorkbook workBook = null;
