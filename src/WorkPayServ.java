@@ -1,3 +1,6 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AbstractDocument;
@@ -123,7 +126,7 @@ public class WorkPayServ {
 
     }
 
-    private void sendResult(Object obj, ObjectOutputStream out) {
+    private void sendResult(Object obj, @NotNull ObjectOutputStream out) {
         getResult(obj);
         try {
             out.writeObject(worker);
@@ -144,6 +147,7 @@ public class WorkPayServ {
         }
     }
 
+    @Contract(pure = true)
     private synchronized boolean isServerOn() {
         return serverOn;
     }
@@ -194,7 +198,6 @@ public class WorkPayServ {
         frame = new JFrame("WK-Server");
         frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
-        JPopupMenu trayMenu = new JPopupMenu();
         JMenuBar menuBar = new JMenuBar();
         JMenu menuProgram = new JMenu("Программа");
         JMenuItem settings = new JMenuItem("Настройки");
@@ -237,7 +240,6 @@ public class WorkPayServ {
         menuProgram.add(exit);
         menuBar.add(menuProgram);
 
-        trayMenu.add(exit);
 
         frame.getContentPane().add(menuBar,BorderLayout.NORTH);
         frame.getContentPane().add(centrPanel,BorderLayout.CENTER);
