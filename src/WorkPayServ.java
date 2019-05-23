@@ -277,8 +277,12 @@ public class WorkPayServ {
     public class ButtonSaveSettingsListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (prop.size()>0)
             save();
-            launchGui();
+            else{
+                save();
+                launchGui();
+            }
         }
 
         private void save() {
