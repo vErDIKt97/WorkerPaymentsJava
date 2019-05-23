@@ -29,9 +29,8 @@ public class WorkPayServ {
     private JButton buttonStopServer;
     private JButton buttonLaunchServer;
     private JButton buttonReloadFile;
-
+    private Image icon = new ImageIcon(getClass().getResource("img\\wksrv.png")).getImage();
     private String path;
-
     {
         try {
             path = WorkPayServ.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath() + "cfg.txt";
@@ -115,7 +114,6 @@ public class WorkPayServ {
 
     private void go() {
         try {
-            Image icon = new ImageIcon("res\\img\\wksrv.ico").getImage();
             File cfgFile = new File(path);
             if (cfgFile.exists()) {
                 prop.load(new FileInputStream(cfgFile));
@@ -164,6 +162,7 @@ public class WorkPayServ {
 
     private void startGui() {
         frame = new JFrame("Настройки");
+        frame.setIconImage(icon);
         frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         JLabel label = new JLabel("Выберете порт:");
 
@@ -207,6 +206,7 @@ public class WorkPayServ {
 
     private void launchGui() {
         frame = new JFrame("WK-Server");
+        frame.setIconImage(icon);
         frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         JMenuBar menuBar = new JMenuBar();
         JMenu menuProgram = new JMenu("Программа");
