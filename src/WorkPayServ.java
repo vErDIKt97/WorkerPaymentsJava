@@ -115,6 +115,7 @@ public class WorkPayServ {
 
     private void go() {
         try {
+            Image icon = new ImageIcon("res\\img\\wksrv.ico").getImage();
             File cfgFile = new File(path);
             if (cfgFile.exists()) {
                 prop.load(new FileInputStream(cfgFile));
@@ -167,6 +168,7 @@ public class WorkPayServ {
         JLabel label = new JLabel("Выберете порт:");
 
         text = new JTextField(20);
+        text.setText(prop.getProperty("port"));
 
         JLabel labelSettings = new JLabel("Настройки:");
 
@@ -206,7 +208,6 @@ public class WorkPayServ {
     private void launchGui() {
         frame = new JFrame("WK-Server");
         frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-
         JMenuBar menuBar = new JMenuBar();
         JMenu menuProgram = new JMenu("Программа");
         JMenuItem settings = new JMenuItem("Настройки");
@@ -287,7 +288,10 @@ public class WorkPayServ {
 
         private void save() {
             try {
-                prop.setProperty("port",port.toString());
+                if (!text.getText().equals(prop.getProperty("port"))) {
+                    prop.setProperty("port", port.toString());
+                    JOptionPane.showMessageDialog(frame.getContentPane(),"Для изменения порта нужен перезапуск программы!","Информация",JOptionPane.INFORMATION_MESSAGE);
+                }
                 prop.setProperty("file",file.toString());
                 FileOutputStream outputStream = new FileOutputStream(path);
                 prop.store(outputStream, "settings");
