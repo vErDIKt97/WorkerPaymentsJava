@@ -31,7 +31,6 @@ public class WorkPayServ {
     private JButton buttonStopServer;
     private JButton buttonLaunchServer;
     private JButton buttonReloadFile;
-    private TrayIcon trayIcon;
     private JPopupMenu popupMenu;
     private Image icon = new ImageIcon(getClass().getResource("img\\wksrv.png")).getImage();
     private String path;
@@ -167,7 +166,7 @@ public class WorkPayServ {
     }
 
     private void buildTray () {
-        trayIcon = new TrayIcon(icon,"WKserver");
+        TrayIcon trayIcon = new TrayIcon(icon, "WKserver");
         popupMenu = new JPopupMenu();
 
         JMenuItem exit = new JMenuItem("Выход");
