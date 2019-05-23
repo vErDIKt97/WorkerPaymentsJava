@@ -10,6 +10,8 @@ import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -29,6 +31,8 @@ public class WorkPayServ {
     private JButton buttonStopServer;
     private JButton buttonLaunchServer;
     private JButton buttonReloadFile;
+    private TrayIcon trayIcon;
+    private JPopupMenu popupMenu;
     private Image icon = new ImageIcon(getClass().getResource("img\\wksrv.png")).getImage();
     private String path;
     {
@@ -39,6 +43,7 @@ public class WorkPayServ {
         }
     }
 
+    private SystemTray tray = SystemTray.getSystemTray();
     private int threadCount = 1;
     private Integer port;
     private File file = null;
@@ -113,6 +118,7 @@ public class WorkPayServ {
     }
 
     private void go() {
+        buildTray();
         try {
             File cfgFile = new File(path);
             if (cfgFile.exists()) {
@@ -158,6 +164,76 @@ public class WorkPayServ {
     @Contract(pure = true)
     private synchronized boolean isServerOn() {
         return serverOn;
+    }
+
+    private void buildTray () {
+        trayIcon = new TrayIcon(icon,"WKserver");
+        popupMenu = new JPopupMenu();
+
+        JMenuItem exit = new JMenuItem("Выход");
+        exit.addActionListener(new ExitMenuListener());
+
+        JMenuItem showProg = new JMenuItem("Свернуть\\Развернуть");
+        showProg.addActionListener(new ShowMenuListener());
+
+        popupMenu.add(showProg);
+        popupMenu.add(exit);
+
+        trayIcon.setImageAutoSize(true);
+        trayIcon.addMouseListener(new TrayIconMouseReleased());
+        try {
+            tray.add(trayIcon);
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+    }
+
+    class ShowMenuListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (frame.isVisible()) frame.setVisible(false);
+            else frame.setVisible(true);
+        }
+    }
+
+    class ExitMenuListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            System.exit(0);
+        }
+    }
+
+    class TrayIconMouseReleased implements MouseListener {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getButton() == 3) {
+                popupMenu.setInvoker(popupMenu);
+                popupMenu.setLocation(MouseInfo.getPointerInfo().getLocation());
+                popupMenu.setVisible(true);
+            }
+            else if (e.getClickCount()==2 && e.getButton()==1)
+                if (frame.isVisible()) frame.setVisible(false);
+                else frame.setVisible(true);
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
     }
 
     private void startGui() {
