@@ -23,7 +23,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class WorkPayServ {
     private Properties prop = new Properties();
-    private JFrame frame;
+    private JFrame settingsframe;
+    private JFrame programmFrame;
     private JTextField text;
     private JLabel labelFile;
     private JFileChooser fileChooser;
@@ -32,7 +33,7 @@ public class WorkPayServ {
     private JButton buttonLaunchServer;
     private JButton buttonReloadFile;
     private JPopupMenu popupMenu;
-    private Image icon = new ImageIcon(getClass().getResource("img\\wksrv.png")).getImage();
+    private Image icon = new ImageIcon(getClass().getResource("wksrv.png")).getImage();
     private String path;
     {
         try {
@@ -190,8 +191,7 @@ public class WorkPayServ {
     class ShowMenuListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (frame.isVisible()) frame.setVisible(false);
-            else frame.setVisible(true);
+            programmFrame.setVisible(true);
         }
     }
 
@@ -211,8 +211,8 @@ public class WorkPayServ {
                 popupMenu.setVisible(true);
             }
             else if (e.getClickCount()==2 && e.getButton()==1)
-                if (frame.isVisible()) frame.setVisible(false);
-                else frame.setVisible(true);
+                if (programmFrame.isVisible()) programmFrame.setVisible(false);
+                else programmFrame.setVisible(true);
         }
 
         @Override
@@ -236,9 +236,9 @@ public class WorkPayServ {
     }
 
     private void startGui() {
-        frame = new JFrame("Настройки");
-        frame.setIconImage(icon);
-        frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        settingsframe = new JFrame("Настройки");
+        settingsframe.setIconImage(icon);
+        settingsframe.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         JLabel label = new JLabel("Выберете порт:");
 
         text = new JTextField(20);
@@ -269,20 +269,20 @@ public class WorkPayServ {
         buttonStart = new JButton("Сохранить настройки");
         buttonStart.addActionListener(new ButtonSaveSettingsListener());
         buttonStart.setEnabled(false);
-        frame.getContentPane().add(labelSettings,BorderLayout.NORTH);
-        frame.getContentPane().add(panel);
-        frame.getContentPane().add(buttonStart, BorderLayout.SOUTH);
-        frame.setSize(300, 200);
-        frame.setVisible(true);
+        settingsframe.getContentPane().add(labelSettings,BorderLayout.NORTH);
+        settingsframe.getContentPane().add(panel);
+        settingsframe.getContentPane().add(buttonStart, BorderLayout.SOUTH);
+        settingsframe.setSize(300, 200);
+        settingsframe.setVisible(true);
 
         ((AbstractDocument) text.getDocument()).setDocumentFilter(new MyDocumentFilter());
 
     }
 
     private void launchGui() {
-        frame = new JFrame("WK-Server");
-        frame.setIconImage(icon);
-        frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        programmFrame = new JFrame("WK-Server");
+        programmFrame.setIconImage(icon);
+        programmFrame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         JMenuBar menuBar = new JMenuBar();
         JMenu menuProgram = new JMenu("Программа");
         JMenuItem settings = new JMenuItem("Настройки");
@@ -326,16 +326,16 @@ public class WorkPayServ {
         menuBar.add(menuProgram);
 
 
-        frame.getContentPane().add(menuBar,BorderLayout.NORTH);
-        frame.getContentPane().add(centrPanel,BorderLayout.CENTER);
-        frame.setSize(300,200);
-        frame.setVisible(true);
+        programmFrame.getContentPane().add(menuBar,BorderLayout.NORTH);
+        programmFrame.getContentPane().add(centrPanel,BorderLayout.CENTER);
+        programmFrame.setSize(300,200);
+        programmFrame.setVisible(true);
     }
 
     public class ButtonChooseListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            int result = fileChooser.showOpenDialog(frame.getContentPane());
+            int result = fileChooser.showOpenDialog(settingsframe.getContentPane());
             if (result == JFileChooser.APPROVE_OPTION)
                 if (fileChooser.getSelectedFile().exists()) {
                     labelFile.setText(fileChooser.getSelectedFile().getName());
@@ -345,7 +345,7 @@ public class WorkPayServ {
                         port = Integer.parseInt(text.getText());
                     } else buttonStart.setEnabled(false);
                 } else
-                    JOptionPane.showMessageDialog(frame.getContentPane(), "Файл не существует", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(settingsframe.getContentPane(), "Файл не существует", "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -365,7 +365,7 @@ public class WorkPayServ {
             try {
                 if (!text.getText().equals(prop.getProperty("port"))) {
                     prop.setProperty("port", port.toString());
-                    JOptionPane.showMessageDialog(frame.getContentPane(),"Для изменения порта нужен перезапуск программы!","Информация",JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(settingsframe.getContentPane(),"Для изменения порта нужен перезапуск программы!","Информация",JOptionPane.INFORMATION_MESSAGE);
                 }
                 prop.setProperty("file",file.toString());
                 FileOutputStream outputStream = new FileOutputStream(path);
@@ -373,7 +373,7 @@ public class WorkPayServ {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            frame.setVisible(false);
+            settingsframe.setVisible(false);
         }
     }
 
@@ -418,7 +418,7 @@ public class WorkPayServ {
         public void actionPerformed(ActionEvent e) {
             if (!isServerOn())
             startGui();
-            else JOptionPane.showMessageDialog(frame.getContentPane(),"Сначала остановите работу сервера","Ошибка",JOptionPane.ERROR_MESSAGE);
+            else JOptionPane.showMessageDialog(programmFrame.getContentPane(),"Сначала остановите работу сервера","Ошибка",JOptionPane.ERROR_MESSAGE);
         }
     }
 
