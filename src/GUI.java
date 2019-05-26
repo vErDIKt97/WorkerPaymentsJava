@@ -21,7 +21,6 @@ class GUI {
     private JButton buttonStart;
     private JButton buttonStopServer;
     private JButton buttonLaunchServer;
-    private JButton buttonReloadFile;
     private JPopupMenu popupMenu;
     private Image icon = new ImageIcon(getClass().getResource("wksrv.png")).getImage();
     private SystemTray tray = SystemTray.getSystemTray();
@@ -51,7 +50,7 @@ class GUI {
         try {
             tray.add(trayIcon);
         } catch (AWTException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame.getContentPane(),e.toString(),"Ошибка",JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -104,6 +103,7 @@ class GUI {
 
     private void startGui() {
         frame = new JFrame("Настройки");
+        frame.setLocationRelativeTo(null);
         frame.setIconImage(icon);
         frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         JLabel label = new JLabel("Выберете порт:");
@@ -148,6 +148,7 @@ class GUI {
 
     private void launchGui() {
         frame = new JFrame("WK-Server");
+        frame.setLocationRelativeTo(null);
         frame.setIconImage(icon);
         frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         JMenuBar menuBar = new JMenuBar();
@@ -172,17 +173,12 @@ class GUI {
         buttonStopServer.addActionListener(new ButtonStopListener());
 
 
-        buttonReloadFile = new JButton("Обновить файл");
-        buttonReloadFile.addActionListener(new ButtonReloadFileListener());
-
-
         buttonLaunchServer = new JButton("Запустить сервер");
         buttonLaunchServer.addActionListener(new ButtonStartListener());
 
         centrPanel.add(labelInWork);
         centrPanel.add(text);
         centrPanel.add(buttonStopServer);
-        centrPanel.add(buttonReloadFile);
         centrPanel.add(buttonLaunchServer);
 
         menuProgram.add(settings);
@@ -197,6 +193,7 @@ class GUI {
         frame.getContentPane().add(centrPanel,BorderLayout.CENTER);
         frame.setSize(300,200);
         frame.setVisible(true);
+        workPayServ.getReloadFile().start();
     }
 
     public class ButtonChooseListener implements ActionListener {
@@ -207,6 +204,7 @@ class GUI {
                 if (fileChooser.getSelectedFile().exists()) {
                     labelFile.setText(fileChooser.getSelectedFile().getName());
                     workPayServ.setFile(fileChooser.getSelectedFile());
+                    workPayServ.setList(ExcelParser.excelParse(workPayServ.getFile()));
                     if (text.getText().length() > 0) {
                         buttonStart.setEnabled(true);
                         workPayServ.setPort(Integer.parseInt(text.getText()));
@@ -237,7 +235,7 @@ class GUI {
                 FileOutputStream outputStream = new FileOutputStream(workPayServ.getPath());
                 workPayServ.getProp().store(outputStream, "settings");
             } catch (IOException ex) {
-                ex.printStackTrace();
+                JOptionPane.showMessageDialog(frame.getContentPane(),ex.toString(),"Ошибка",JOptionPane.INFORMATION_MESSAGE);
             }
             frame.setVisible(false);
         }
@@ -248,26 +246,16 @@ class GUI {
         public void actionPerformed(ActionEvent e) {
             workPayServ.setServerOn(true);
             buttonStopServer.setEnabled(true);
-            buttonReloadFile.setEnabled(false);
             buttonLaunchServer.setEnabled(false);
-            if (workPayServ.getThreadCount() == 1) workPayServ.startServer();
+            if (workPayServ.getThreadCount() == 2) workPayServ.startServer();
             else synchronized (workPayServ.getMonitor()) {workPayServ.getMonitor().notifyAll();}
         }
     }
-
-    public class ButtonReloadFileListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            workPayServ.setList(ExcelParser.excelParse(workPayServ.getFile()));
-        }
-    }
-
     public class ButtonStopListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             buttonStopServer.setEnabled(false);
             buttonLaunchServer.setEnabled(true);
-            buttonReloadFile.setEnabled(true);
             workPayServ.setServerOn(false);
         }
     }
@@ -302,4 +290,7 @@ class GUI {
         }
     }
 
+    public JFrame getFrame() {
+        return frame;
+    }
 }

@@ -31,6 +31,7 @@ public class WorkPayServ {
 
     private final AtomicReference<Object> monitor = new AtomicReference<>();
     private boolean serverOn = false;
+    private Thread reloadFile = new Thread(new ReloadFile());
 
     public static void main(String[] args) {
         workPayServ = new WorkPayServ();
@@ -138,6 +139,9 @@ public class WorkPayServ {
             File cfgFile = new File(path);
             if (cfgFile.exists()) {
                 prop.load(new FileInputStream(cfgFile));
+                port = Integer.parseInt(prop.getProperty("port"));
+                file = new File(prop.getProperty("file"));
+                list = ExcelParser.excelParse(file);
             } else {
                 cfgFile.createNewFile();
             }
@@ -178,6 +182,24 @@ public class WorkPayServ {
     @Contract(pure = true)
     synchronized boolean isServerOn() {
         return serverOn;
+    }
+
+    class ReloadFile implements Runnable  {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    workPayServ.setList(ExcelParser.excelParse(workPayServ.getFile()));
+                    Thread.sleep(3600000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    Thread getReloadFile() {
+        return reloadFile;
     }
 
     Properties getProp() {
