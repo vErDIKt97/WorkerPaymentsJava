@@ -1,17 +1,6 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -23,18 +12,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class WorkPayServ {
     private Properties prop = new Properties();
-    private JFrame settingsframe;
-    private JFrame programmFrame;
-    private JTextField text;
-    private JLabel labelFile;
-    private JFileChooser fileChooser;
-    private JButton buttonStart;
-    private JButton buttonStopServer;
-    private JButton buttonLaunchServer;
-    private JButton buttonReloadFile;
-    private JPopupMenu popupMenu;
-    private Image icon = new ImageIcon(getClass().getResource("wksrv.png")).getImage();
+    static WorkPayServ workPayServ;
     private String path;
+
     {
         try {
             path = WorkPayServ.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath() + "cfg.txt";
@@ -42,8 +22,6 @@ public class WorkPayServ {
             e.printStackTrace();
         }
     }
-
-    private SystemTray tray = SystemTray.getSystemTray();
     private int threadCount = 1;
     private Integer port;
     private File file = null;
@@ -55,7 +33,44 @@ public class WorkPayServ {
     private boolean serverOn = false;
 
     public static void main(String[] args) {
-        new WorkPayServ().go();
+        workPayServ = new WorkPayServ();
+        workPayServ.go();
+    }
+
+    void setList(HashMap<String, Integer> list) {
+        this.list = list;
+    }
+
+    AtomicReference<Object> getMonitor() {
+        return monitor;
+    }
+
+    int getThreadCount() {
+        return threadCount;
+    }
+
+    void setServerOn(boolean serverOn) {
+        this.serverOn = serverOn;
+    }
+
+    String getPath() {
+        return path;
+    }
+
+    File getFile() {
+        return file;
+    }
+
+    void setFile(File file) {
+        this.file = file;
+    }
+
+    Integer getPort() {
+        return port;
+    }
+
+    void setPort(Integer port) {
+        this.port = port;
     }
 
     public class ServerStart implements Runnable {
@@ -118,22 +133,21 @@ public class WorkPayServ {
     }
 
     private void go() {
-        buildTray();
+
         try {
             File cfgFile = new File(path);
             if (cfgFile.exists()) {
                 prop.load(new FileInputStream(cfgFile));
-                launchGui();
             } else {
                 cfgFile.createNewFile();
-                startGui();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        GUI gui = new GUI();
     }
 
-    private void startServer() {
+    void startServer() {
         Thread serverThread = new Thread(new ServerStart());
         threadCount++;
         serverThread.start();
@@ -162,279 +176,11 @@ public class WorkPayServ {
     }
 
     @Contract(pure = true)
-    private synchronized boolean isServerOn() {
+    synchronized boolean isServerOn() {
         return serverOn;
     }
 
-    private void buildTray () {
-        TrayIcon trayIcon = new TrayIcon(icon, "WKserver");
-        popupMenu = new JPopupMenu();
-
-        JMenuItem exit = new JMenuItem("Выход");
-        exit.addActionListener(new ExitMenuListener());
-
-        JMenuItem showProg = new JMenuItem("Свернуть\\Развернуть");
-        showProg.addActionListener(new ShowMenuListener());
-
-        popupMenu.add(showProg);
-        popupMenu.add(exit);
-
-        trayIcon.setImageAutoSize(true);
-        trayIcon.addMouseListener(new TrayIconMouseReleased());
-        try {
-            tray.add(trayIcon);
-        } catch (AWTException e) {
-            e.printStackTrace();
-        }
+    Properties getProp() {
+        return prop;
     }
-
-    class ShowMenuListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            programmFrame.setVisible(true);
-        }
-    }
-
-    class ExitMenuListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            System.exit(0);
-        }
-    }
-
-    class TrayIconMouseReleased implements MouseListener {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getButton() == 3) {
-                popupMenu.setInvoker(popupMenu);
-                popupMenu.setLocation(MouseInfo.getPointerInfo().getLocation());
-                popupMenu.setVisible(true);
-            }
-            else if (e.getClickCount()==2 && e.getButton()==1)
-                if (programmFrame.isVisible()) programmFrame.setVisible(false);
-                else programmFrame.setVisible(true);
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-
-        }
-    }
-
-    private void startGui() {
-        settingsframe = new JFrame("Настройки");
-        settingsframe.setIconImage(icon);
-        settingsframe.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        JLabel label = new JLabel("Выберете порт:");
-
-        text = new JTextField(20);
-        text.setText(prop.getProperty("port"));
-
-        JLabel labelSettings = new JLabel("Настройки:");
-
-        JLabel labelChoose = new JLabel("Выберете файл");
-
-        labelFile = new JLabel("Ваш файл: ");
-
-        JButton buttonChoose = new JButton("Выбрать");
-        buttonChoose.addActionListener(new ButtonChooseListener());
-        fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Выбор файла");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Файлы Excel", "xlsx");
-        fileChooser.setFileFilter(filter);
-
-        JPanel panel = new JPanel();
-        panel.add(label);
-        panel.add(text);
-        panel.add(labelChoose);
-        panel.add(labelFile);
-        panel.add(buttonChoose);
-
-
-        buttonStart = new JButton("Сохранить настройки");
-        buttonStart.addActionListener(new ButtonSaveSettingsListener());
-        buttonStart.setEnabled(false);
-        settingsframe.getContentPane().add(labelSettings,BorderLayout.NORTH);
-        settingsframe.getContentPane().add(panel);
-        settingsframe.getContentPane().add(buttonStart, BorderLayout.SOUTH);
-        settingsframe.setSize(300, 200);
-        settingsframe.setVisible(true);
-
-        ((AbstractDocument) text.getDocument()).setDocumentFilter(new MyDocumentFilter());
-
-    }
-
-    private void launchGui() {
-        programmFrame = new JFrame("WK-Server");
-        programmFrame.setIconImage(icon);
-        programmFrame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menuProgram = new JMenu("Программа");
-        JMenuItem settings = new JMenuItem("Настройки");
-        JMenuItem support = new JMenuItem("Поддержка");
-        JMenuItem about = new JMenuItem("О программе");
-        JMenuItem exit = new JMenuItem("Выход");
-        exit.addActionListener(new ExitListener());
-        settings.addActionListener(new SettingsListener());
-        JPanel centrPanel = new JPanel();
-
-        JLabel labelInWork =new JLabel("Файл в работе:");
-
-        text = new JTextField();
-        text.setText(prop.getProperty("file"));
-        text.setEditable(false);
-
-
-        buttonStopServer = new JButton("Остановить сервер");
-        buttonStopServer.setEnabled(false);
-        buttonStopServer.addActionListener(new ButtonStopListener());
-
-
-        buttonReloadFile = new JButton("Обновить файл");
-        buttonReloadFile.addActionListener(new ButtonReloadFileListener());
-
-
-        buttonLaunchServer = new JButton("Запустить сервер");
-        buttonLaunchServer.addActionListener(new ButtonStartListener());
-
-        centrPanel.add(labelInWork);
-        centrPanel.add(text);
-        centrPanel.add(buttonStopServer);
-        centrPanel.add(buttonReloadFile);
-        centrPanel.add(buttonLaunchServer);
-
-        menuProgram.add(settings);
-        menuProgram.add(new JSeparator());
-        menuProgram.add(support);
-        menuProgram.add(about);
-        menuProgram.add(exit);
-        menuBar.add(menuProgram);
-
-
-        programmFrame.getContentPane().add(menuBar,BorderLayout.NORTH);
-        programmFrame.getContentPane().add(centrPanel,BorderLayout.CENTER);
-        programmFrame.setSize(300,200);
-        programmFrame.setVisible(true);
-    }
-
-    public class ButtonChooseListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            int result = fileChooser.showOpenDialog(settingsframe.getContentPane());
-            if (result == JFileChooser.APPROVE_OPTION)
-                if (fileChooser.getSelectedFile().exists()) {
-                    labelFile.setText(fileChooser.getSelectedFile().getName());
-                    file = fileChooser.getSelectedFile();
-                    if (text.getText().length() > 0) {
-                        buttonStart.setEnabled(true);
-                        port = Integer.parseInt(text.getText());
-                    } else buttonStart.setEnabled(false);
-                } else
-                    JOptionPane.showMessageDialog(settingsframe.getContentPane(), "Файл не существует", "Ошибка", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
-    public class ButtonSaveSettingsListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (prop.size()>0)
-            save();
-            else{
-                save();
-                launchGui();
-            }
-        }
-
-        private void save() {
-            try {
-                if (!text.getText().equals(prop.getProperty("port"))) {
-                    prop.setProperty("port", port.toString());
-                    JOptionPane.showMessageDialog(settingsframe.getContentPane(),"Для изменения порта нужен перезапуск программы!","Информация",JOptionPane.INFORMATION_MESSAGE);
-                }
-                prop.setProperty("file",file.toString());
-                FileOutputStream outputStream = new FileOutputStream(path);
-                prop.store(outputStream, "settings");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            settingsframe.setVisible(false);
-        }
-    }
-
-    public class ButtonStartListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            serverOn = true;
-            buttonStopServer.setEnabled(true);
-            buttonReloadFile.setEnabled(false);
-            buttonLaunchServer.setEnabled(false);
-            if (threadCount == 1) startServer();
-            else synchronized (monitor) {monitor.notifyAll();}
-        }
-    }
-
-    public class ButtonReloadFileListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            list = ExcelParser.excelParse(file);
-        }
-    }
-
-    public class ButtonStopListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            buttonStopServer.setEnabled(false);
-            buttonLaunchServer.setEnabled(true);
-            buttonReloadFile.setEnabled(true);
-            serverOn = false;
-        }
-    }
-
-    public class ExitListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            System.exit(0);
-        }
-    }
-
-    class SettingsListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isServerOn())
-            startGui();
-            else JOptionPane.showMessageDialog(programmFrame.getContentPane(),"Сначала остановите работу сервера","Ошибка",JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    class MyDocumentFilter extends DocumentFilter {
-        @Override
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-            string = string.replaceAll("\\D", "");
-            super.insertString(fb, offset, string, attr);
-        }
-
-        @Override
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-            text = text.replaceAll("\\D", "");
-            super.replace(fb, offset, length, text, attrs);
-        }
-    }
-
-
 }
